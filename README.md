@@ -1,55 +1,75 @@
-# Svelte + TS + Vite
+# FireSvelte
+**A library that massively oversimplifies the usage of firebase with svelte(kit)**
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
-
-## Recommended IDE Setup
-
-<<<<<<< Updated upstream
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
-=======
-## (The base library) SvelteFire includes:
-- `userStore`, `docStore` and `collectionStore` for reactive data for svelte
-- `FirebaseApp` component to set the app, auth and firestore for context
-- `User`, `Doc` and `Collection` components to automatically use `userStore`, `docStore` and `collectionStore`
->>>>>>> Stashed changes
-
-## Need an official Svelte framework?
-
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
-
-## Technical considerations
-
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-  `vite dev` and `vite build` wouldn't work in a SvelteKit environment, for example.
-
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+> All of the components are provided by FireSvelte in the example below
+```svelte
+  <FirebaseApp {credentials}>
+    <User let:user>
+      <EmailVerified>
+        <h1>Hello {user.displayName}!</h1>
+        <SignOutButton/>
+        <h2>Your Posts</h2>
+        <Collection
+          ref={`/userData/${user.uid}/posts`}
+          startWith={[]}
+          checkForEmpty
+          let:data={posts}
+          let:ref={postsRef}
+          let:count
+        >
+          <p>You have {count} posts.</p>
+          <ul>
+            {#each posts as post}
+              <li>
+                <h3>{post.title}</h3>
+                <p>{post.preview}</p>
+                <button
+                  on:click={() => deleteDoc(post.__ref)}
+                >
+                  Delete post
+                </button>
+              </li>
+            {/each}
+          </ul>
+          <div slot="empty">
+            <p>You don't have any posts</p>
+          </div>
+        </Collection>
+      </EmailVerified>
+      <div slot="signedOut">
+        <h1>Sign in</h1>
+        <div>
+          <PersistenceCheckbox checked ifChecked="local" ifNotChecked="session" id="persistence"/>
+          <label for="persistence">Keep me logged in</label>
+        </div>
+        <EmailPwSignInForm/>
+        <SignInButton>Or sign in with Google</SignInButton>
+        <h1>Sign up</h1>
+        <EmailPwSignUpForm addUsername/>
+      </div>
+    </User>
+  </FirebaseApp>
 ```
+
+**Everything is fully customizable (using slots and passing down all props e.g. in the `SignInButton`)**
+**Everything is written in TypeScript**
+
+## What does FireSvelte provide?
+### General:
+- Automatically **initializes firebase** `app`, `auth`, `firestore` and `storage`. You just have to provide your firebase credentials to the `FirebaseApp` component.
+- Sets the `app`, `auth`, `firestore` and `storage` in a (global) *store* called *`fbServices`*.
+
+### Auth
+- `userStore` with `User` component with `signedOut` and `loading` states.
+- `SignInButton`. You can pass in the `persistence` and an `AuthProvider`, or use default one, which is Google.
+- `SignOutButton`.
+- `PersistenceCheckbox`.
+- `EmailPwSignUpForm` (with support with automatic username uploading) and `EmailPwSignInForm`, both of which have default templates, but are fully customizable, very easily.
+- `AuthReloadButton` (for utility).
+- `EmailVerification`, which handles all the email verification.
+- `EmailVerified`, which ensures, that the user's email is verified, or else they will be shown the `EmailVerification`.
+
+### Firestore
+- `docStore`, `collectionStore` and `collectionGroupStore` (written in TypeScript with Generics).
+- `Doc`, `Collection` and `CollectionGroup` with `loading` state, `startWith` value, typed
+- `CustomDocumentData` type, which directly has all the `data`, (no need to call `.data()`), `__ref` from the reference of the document, `__id` and `__exists`
