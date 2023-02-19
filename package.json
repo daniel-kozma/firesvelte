@@ -1,6 +1,6 @@
 {
 	"name": "firesvelte",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "A library that massively oversimplifies the usage of firebase with svelte(kit)",
 	"keywords": ["svelte", "sveltekit", "firebase"],
 	"markdown": "github",
