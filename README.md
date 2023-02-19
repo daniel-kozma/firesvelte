@@ -4,7 +4,14 @@ This template should help get you started developing with Svelte and TypeScript 
 
 ## Recommended IDE Setup
 
+<<<<<<< Updated upstream
 [VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+=======
+## (The base library) SvelteFire includes:
+- `userStore`, `docStore` and `collectionStore` for reactive data for svelte
+- `FirebaseApp` component to set the app, auth and firestore for context
+- `User`, `Doc` and `Collection` components to automatically use `userStore`, `docStore` and `collectionStore`
+>>>>>>> Stashed changes
 
 ## Need an official Svelte framework?
 
